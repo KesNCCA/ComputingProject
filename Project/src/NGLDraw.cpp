@@ -206,9 +206,8 @@ void NGLDraw::draw(float _delta)
 
             if (isCollided)
             {
-                //Remove asteroid
                 std::vector<Asteroid>::iterator it;
-                //Remove specific asteroid when teapot collides.
+                //Remove specific asteroid when teapot collides, 'i' amount accross the vector array .
                 it = asteroidVec.begin() + i;
                 asteroidVec.erase(it);
                 //Print health

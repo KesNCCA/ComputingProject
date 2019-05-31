@@ -2,6 +2,7 @@
 
 shot::shot(ngl::Transformation m_transform, float _angle)
 {
+    //sets both angle and position (not speed) the same as the teapot, so they fire from the correct origin and direction
     this->m_transform = m_transform;
     this->m_angle = _angle;
 

@@ -1,0 +1,20 @@
+GAME MANUAL
+
+To start the game press the ENTER key
+
+To pause the game press the P key
+
+MOVEMENT:
+
+UP KEY - accelerate
+DOWN KEY - decelerate
+LEFT KEY - TURN LEFT
+RIGHT KEY - TURN RIGHT
+
+X KEY - reset teapot position
+
+SHOOTING:
+
+SPACE KEY - SHOOT BULLETS
+
+

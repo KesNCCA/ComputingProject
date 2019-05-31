@@ -2,11 +2,11 @@
 
 #include "timer.h"
 
-Timer::Timer() : ticks(0), Pticks(0), started(false), paused(false)
+Timer::Timer() : m_ticks(0), m_Pticks(0), m_started(false), m_paused(false)
 {
     //if the SDL subsystem timer isn't active then activate it.
-    newStartPosition = 0;
-    previousFrameTime = 0;
+    m_newStartPosition = 0;
+    m_previousFrameTime = 0;
 
     if(SDL_WasInit(SDL_INIT_TIMER) == 0) SDL_InitSubSystem(SDL_INIT_TIMER);
 }
@@ -15,62 +15,62 @@ Timer::~Timer(){}
 
 void Timer::Start()
 {
-    started = true;
-    paused = false;
-    ticks = SDL_GetTicks();
+    m_started = true;
+    m_paused = false;
+    m_ticks = SDL_GetTicks();
 }
 
 void Timer::Reset()
 {
-    newStartPosition = mDeltaTime;
+    m_newStartPosition = m_DeltaTime;
 }
 
 void Timer::Pause()
 {
-    if(started == true)
+    if(m_started == true)
     {
-        paused = true;
-        Pticks = SDL_GetTicks() - ticks;
+        m_paused = true;
+        m_Pticks = SDL_GetTicks() - m_ticks;
     }
 }
 
 void Timer::Continue()
 {
-    if(started == true && paused == true)
+    if(m_started == true && m_paused == true)
     {
-        paused = false;
-        ticks = SDL_GetTicks() - Pticks;
+        m_paused = false;
+        m_ticks = SDL_GetTicks() - m_Pticks;
     }
 }
 
 float Timer::DeltaTime()
 {
-    return mDeltaTime;
+    return m_DeltaTime;
 }
 
 float Timer::GetTime()
 {
-    if(started == true)
+    if(m_started == true)
     {
-        if(paused == true)
+        if(m_paused == true)
         {
-            mElapsedTicks = Pticks;
+            m_ElapsedTicks = m_Pticks;
             //To get value in seconds * 0.001f
-            mDeltaTime = mElapsedTicks * 0.001f;
+            m_DeltaTime = m_ElapsedTicks * 0.001f;
         }
         else
-            mElapsedTicks = SDL_GetTicks() - ticks;
+            m_ElapsedTicks = SDL_GetTicks() - m_ticks;
         //To get value in seconds * 0.001f
-        mDeltaTime = mElapsedTicks * 0.001f;
+        m_DeltaTime = m_ElapsedTicks * 0.001f;
     }
-    return mDeltaTime - newStartPosition;
+    return m_DeltaTime - m_newStartPosition;
 
 }
 
 float Timer::GetFPSDifference()
 {
-    float time = SDL_GetTicks() - previousFrameTime;
-    previousFrameTime = SDL_GetTicks();
+    float time = SDL_GetTicks() - m_previousFrameTime;
+    m_previousFrameTime = SDL_GetTicks();
 
     return time;
 }

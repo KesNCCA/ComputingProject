@@ -26,7 +26,7 @@ void Menu::resize(int _w, int _h)
 
 void Menu::draw()
 {
-    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // White Background
     glViewport( 0, 0, m_width, m_height );
     // clear the screen and depth buffer
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
