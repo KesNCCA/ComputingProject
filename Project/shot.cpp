@@ -1,36 +1,35 @@
 #include "shot.h"
 
-#define BULLET_SPEED 0.1f
-
-shot::shot(ngl::Transformation m_transform, float angle)
+shot::shot(ngl::Transformation m_transform, float _angle)
 {
     this->m_transform = m_transform;
-    this->angle = angle;
+    this->m_angle = _angle;
 
-    radius = 0.2f;
+    m_radius = 0.2f;
 }
 
 shot::~shot(){}
 
-void shot::Draw(ngl::Mat4 m_view, ngl::Mat4 m_mouseGlobalTX, ngl::Mat4 m_project)
+void shot::Draw(ngl::Mat4 m_view, ngl::Mat4 m_mouseGlobalTX, ngl::Mat4 m_project, float delta)
 {
 
     ngl::VAOPrimitives* prim = ngl::VAOPrimitives::instance();
 
     //low poly sphere (bullets)
-    prim->createSphere("sphere",radius, 1);
+    prim->createSphere("sphere", m_radius, 1);
 
     bool isSwitchingSides = false;
 
     //bullet moves in the direction that the ship is moving
-    float x = (float) sin((float)(m_transform.getRotation().m_y + angle) * ngl::PI / 180.0f)*BULLET_SPEED;
-    float y = (float) cos((float)(m_transform.getRotation().m_y + angle) * ngl::PI / 180.0f)*BULLET_SPEED;
+    float x = (float) sin((float)(m_transform.getRotation().m_y + m_angle) * ngl::PI / 180.0f)*BULLET_SPEED;
+    float y = (float) cos((float)(m_transform.getRotation().m_y + m_angle) * ngl::PI / 180.0f)*BULLET_SPEED;
 
-    if (m_transform.getPosition().m_x >= 10 || m_transform.getPosition().m_x <= -10)
+    //bullet switches sides
+    if (m_transform.getPosition().m_x >= 7 || m_transform.getPosition().m_x <= -7)
     {
         isSwitchingSides = true;
     }
-    if (m_transform.getPosition().m_z >= 10 || m_transform.getPosition().m_z <= -10)
+    if (m_transform.getPosition().m_z >= 7 || m_transform.getPosition().m_z <= -7)
     {
         isSwitchingSides = true;
     }
@@ -38,12 +37,12 @@ void shot::Draw(ngl::Mat4 m_view, ngl::Mat4 m_mouseGlobalTX, ngl::Mat4 m_project
     if (isSwitchingSides)
     {
         //remove from vector
-        m_transform.setPosition(m_transform.getPosition().m_x * -1.0f, HeightPos, m_transform.getPosition().m_z * -1.0f);
+        m_transform.setPosition(m_transform.getPosition().m_x * -1.0f, m_HeightPos, m_transform.getPosition().m_z * -1.0f);
         isSwitchingSides = false;
     }
 
     //prevAngle = m_transform.getRotation().m_y;
-    m_transform.addPosition(x, 0.0, y);
+    m_transform.addPosition(x * (delta / 10.0f), 0.0, y * (delta / 10.0f));
 
     loadMatricesToShader(m_view, m_mouseGlobalTX, m_project);
     prim->draw( "sphere" );
@@ -51,7 +50,7 @@ void shot::Draw(ngl::Mat4 m_view, ngl::Mat4 m_mouseGlobalTX, ngl::Mat4 m_project
 
 float shot::GetRadius()
 {
-    return radius;
+    return m_radius;
 }
 
 ngl::Vec3 shot::GetPosition()

@@ -1,9 +1,12 @@
+//Timer class with aspects learned from LazyFoo at https://lazyfoo.net/tutorials/SDL/23_advanced_timers/index.php
+
 #include "timer.h"
 
 Timer::Timer() : ticks(0), Pticks(0), started(false), paused(false)
 {
     //if the SDL subsystem timer isn't active then activate it.
     newStartPosition = 0;
+    previousFrameTime = 0;
 
     if(SDL_WasInit(SDL_INIT_TIMER) == 0) SDL_InitSubSystem(SDL_INIT_TIMER);
 }
@@ -19,11 +22,6 @@ void Timer::Start()
 
 void Timer::Reset()
 {
-    /*started = false;
-    paused = false;
-    ticks = 0.0;
-    Pticks = 0.0;*/
-
     newStartPosition = mDeltaTime;
 }
 
@@ -69,24 +67,11 @@ float Timer::GetTime()
 
 }
 
-float Timer::GetFPS()
+float Timer::GetFPSDifference()
 {
+    float time = SDL_GetTicks() - previousFrameTime;
+    previousFrameTime = SDL_GetTicks();
 
-    Framerate = 0.0f;
-
-    static bool first = true;
-
-    if(first)
-    {
-        //Framerate = 0.0f;
-    }
-
-    Framerate = (DeltaTime()*1000);
-    //30;
-
-    //std::cout << "FPS: " << Framerate << std::endl;
-    //std::cout << "FPStime: " << FPStime << std::endl;
-
-    return Framerate;
+    return time;
 }
 

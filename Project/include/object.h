@@ -23,10 +23,7 @@ protected:
     ngl::Transformation m_transform;
     ngl::Transformation m_rotate;
 
-    float HeightPos;
-    float xDirection;
-    float yDirection;
-    float zDirection;
+    float m_HeightPos;
 };
 
 #endif // OBJECT_H

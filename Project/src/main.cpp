@@ -1,9 +1,7 @@
 #include <SDL.h>
 #include <cstdlib>
 #include <iostream>
-//#include "NGLDraw.h"
 #include "statemanager.h"
-#include <ngl/NGLInit.h>
 #include "timer.h"
 
 /// @brief function to quit SDL with error message
@@ -75,6 +73,7 @@ int main(int argc, char * argv[])
     //ngl.resize(rect.w,rect.h);
 
     //Initialise timer
+    int countedFrames = 0;
     Timer GameTimer;
 
     GameTimer.Start();
@@ -142,12 +141,28 @@ int main(int argc, char * argv[])
 
         } // end of poll events
 
+        float delta = GameTimer.GetFPSDifference();
+
+        //std::cout << "Delta: " << GameTimer.DeltaTime() << std::endl;
+        //std::cout << "Time: " << GameTimer.GetFPS() << std::endl;
+        //std::cout << "FPS: " << GameTimer.GetFPSDifference() << std::endl;
+
+        //if teapot's health = 0, go back to menu
+        /*if (teapot.GetHealth() <= 0)
+        {
+            stateManager.changeState();
+        }*/
+
         // now we draw ngl
-       // ngl.draw();
-        stateManager.draw();
+        // ngl.draw();
+        int w,h;
+        // get the new window size
+        SDL_GetWindowSize(window,&w,&h);
+        stateManager.draw(w, h, delta);
 
         // swap the buffers
         SDL_GL_SwapWindow(window);
+        ++countedFrames;
 
         //increment frame count after buffer swap
 

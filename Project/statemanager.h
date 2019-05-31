@@ -3,8 +3,9 @@
 
 #include <SDL.h>
 #include "NGLDraw.h"
+#include "menu.h"
 
-enum {GAME, PAUSED, WINNER};
+enum {GAME, PAUSED, WINNER, LOSER, MENU};
 
 class StateManager
 {
@@ -12,7 +13,7 @@ public:
     StateManager(int w, int h);
     ~StateManager();
 
-    void draw();
+    void draw(int _w, int _h, float _delta);
 
     void mouseMoveEvent (const SDL_MouseMotionEvent &_event);
     void mousePressEvent (const SDL_MouseButtonEvent &_event);
@@ -22,10 +23,14 @@ public:
 
     void resize(int _w, int _h);
 
+    void changeState();
+
 private:
-    int state;
 
     NGLDraw gameState;
+    Menu GameMenu;
+
+    int m_state;
 
 };
 

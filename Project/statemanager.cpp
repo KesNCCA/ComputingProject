@@ -4,7 +4,7 @@ StateManager::StateManager(int w, int h)
 {
     gameState.resize(w, h);
 
-    state = PAUSED;
+    m_state = MENU;
 }
 
 StateManager::~StateManager()
@@ -12,17 +12,34 @@ StateManager::~StateManager()
 
 }
 
-void StateManager::draw()
+void StateManager::draw(int _w, int _h, float _delta)
 {
-    if (gameState.GetScore() >= 100)
+    if (gameState.GetScore() >= 200)
     {
-        state = WINNER;
+        std::cout << "YOU WIN!" <<std::endl;
+
+        m_state = MENU;
+        gameState.ResetScore();
+        gameState = NGLDraw();
+        gameState.resize(_w, _h);
+        //if enter key is pressed, go back to main menu
+    }
+    if (gameState.teapotHealth() <= 0)
+    {
+        m_state = MENU;
     }
 
-    switch (state)
+    switch (m_state)
     {
+    case MENU:
+
+        GameMenu.draw();
+
+        break;
+
     case GAME:
-        gameState.draw();
+
+        gameState.draw(_delta);
 
         break;
 
@@ -41,7 +58,7 @@ void StateManager::draw()
 
 void StateManager::resize(int _w, int _h)
 {
-    switch (state)
+    switch (m_state)
     {
     case GAME:
         gameState.resize(_w, _h);
@@ -60,7 +77,7 @@ void StateManager::resize(int _w, int _h)
 
 void StateManager::mouseMoveEvent (const SDL_MouseMotionEvent &_event)
 {
-    switch (state)
+    switch (m_state)
     {
     case GAME:
         gameState.mouseMoveEvent(_event);
@@ -79,7 +96,7 @@ void StateManager::mouseMoveEvent (const SDL_MouseMotionEvent &_event)
 
 void StateManager::mousePressEvent (const SDL_MouseButtonEvent &_event)
 {
-    switch (state)
+    switch (m_state)
     {
     case GAME:
         gameState.mousePressEvent(_event);
@@ -98,7 +115,7 @@ void StateManager::mousePressEvent (const SDL_MouseButtonEvent &_event)
 
 void StateManager::mouseReleaseEvent (const SDL_MouseButtonEvent &_event)
 {
-    switch (state)
+    switch (m_state)
     {
     case GAME:
         gameState.mouseReleaseEvent(_event);
@@ -117,7 +134,7 @@ void StateManager::mouseReleaseEvent (const SDL_MouseButtonEvent &_event)
 
 void StateManager::wheelEvent(const SDL_MouseWheelEvent &_event)
 {
-    switch (state)
+    switch (m_state)
     {
     case GAME:
         gameState.wheelEvent(_event);
@@ -138,16 +155,30 @@ void StateManager::keyboardPressEvent(const SDL_Event &_event)
 {
     switch( _event.key.keysym.sym )
     {
-    // if it's the escape key quit
+    //Game state controls
+    //pause
     case SDLK_p:
-        if (state == GAME) { state = PAUSED; }
-        else { state = GAME; };
+        if (m_state == GAME)
+        {
+            m_state = PAUSED;
+        }
+        else if (m_state == PAUSED)
+        {
+            m_state = GAME;
+        };
         break;
+
+        //Start game
+    case SDLK_RETURN:
+        if (m_state == MENU)
+        {
+            m_state = GAME;
+        }
 
     default : break;
     } // end of key process
 
-    switch (state)
+    switch (m_state)
     {
     case GAME:
         gameState.keyboardPressEvent(_event);
@@ -163,4 +194,3 @@ void StateManager::keyboardPressEvent(const SDL_Event &_event)
         break;
     }
 }
-

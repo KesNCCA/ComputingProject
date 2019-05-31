@@ -6,6 +6,8 @@ layout (location =0) out vec4 fragColour;
 in vec3 worldPos;
 in vec3 normal;
 
+uniform vec3 colourIn;
+
 // material parameters
 uniform vec3 albedo;
 uniform float metallic;
@@ -119,6 +121,7 @@ void main()
     color = color / (color + vec3(1.0));
     // gamma correct
     color = pow(color, vec3(1.0/exposure));
+    color = (color)/2;
 
     fragColour = vec4(color, 1.0);
 }

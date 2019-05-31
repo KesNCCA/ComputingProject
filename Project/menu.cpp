@@ -1,25 +1,35 @@
-//#include <SDL.h>
 #include "menu.h"
 
 Menu::Menu()
 {
+    ngl::NGLInit::instance();
 
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);			   // White Background
+    // enable depth testing for drawing
+    glEnable(GL_DEPTH_TEST);
+    // clear the screen and depth buffer
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 }
+
 Menu::~Menu()
 {
     std::cout<<"Shutting down SDL";
 }
 
-void Menu::draw()
+void Menu::resize(int _w, int _h)
 {
-    std::cout <<  "Menu selected" << std::endl;
-    glClearColor(0.2f, 0.2f, 0.9f, 1.0f); //blue background
+    glViewport(0,0, _w  , _h );
+    m_project=ngl::perspective( 45.0f, static_cast<float>( _w ) / _h, 0.1f, 200.0f );
+    m_width=_w;
+    m_height=_h;
 }
 
-void Menu::keyboardPressEvent(const SDL_Event &_event)
+void Menu::draw()
 {
-    if(_event.key.keysym.sym == SDLK_KP_ENTER)
-    {
-        std::cout << "ENTER KEY PRESSED";
-    }
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glViewport( 0, 0, m_width, m_height );
+    // clear the screen and depth buffer
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
 }
+

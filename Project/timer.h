@@ -29,6 +29,8 @@ public:
 
     float GetFPS();
 
+    float GetFPSDifference();
+
 private:
 
     //unsigned float mStartTicks;
@@ -44,6 +46,8 @@ private:
     float Pticks;
 
     float newStartPosition;
+
+    float previousFrameTime;
 
     bool started;
     bool paused;

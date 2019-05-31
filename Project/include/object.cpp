@@ -2,10 +2,7 @@
 
 Object::Object()
 {
-    HeightPos = 2.0f;
-    xDirection = 0;
-    yDirection = 0;
-    zDirection = 0;
+    m_HeightPos = 2.0f;
 }
 
 Object::~Object()

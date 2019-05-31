@@ -5,13 +5,21 @@
 #include <ngl/Transformation.h>
 #include <ngl/Mat4.h>
 #include <ngl/Vec3.h>
+#include <ngl/ShaderLib.h>
+#include <ngl/NGLInit.h>
+#include <ngl/Transformation.h>
+#include <ngl/AbstractVAO.h>
 //own classes
 #include "timer.h"
 #include "spaceship.h"
 #include "asteroid.h"
 #include "shot.h"
-#include "menu.h"
-#include "../timer.h"
+//#include "statemanager.h
+
+#define MOVEMENT_AMOUNT 0.5f
+
+// Time for each asteroid to spawn in game
+#define SPAWN_TIME 2
 
 class NGLDraw
 {
@@ -33,14 +41,9 @@ class NGLDraw
     //----------------------------------------------------------------------------------------------------------------------
     /// @brief draw the scene
     //----------------------------------------------------------------------------------------------------------------------
-    void draw();
+    void draw(float delta);
     //own code
     void buildVAO();
-
-
-
-
-
 
     void keyboardPressEvent(const SDL_Event &_event);
     //----------------------------------------------------------------------------------------------------------------------
@@ -65,6 +68,16 @@ class NGLDraw
     void wheelEvent(const SDL_MouseWheelEvent &_event);
 
     int GetScore();
+
+    void ResetScore();
+
+    void changeState();
+
+    //health of teapot
+    int teapotHealth();
+
+    //teapot damage function
+    void teapotDamage();
 
   private :
     //----------------------------------------------------------------------------------------------------------------------
@@ -124,25 +137,25 @@ class NGLDraw
     ngl::Vec3 m_modelPos;
     int m_width;
     int m_height;
-                               /*OWN CODE*/
 
 
     float xDirection;
     float zDirection;
 
     SpaceShip teapot;
-    //Asteroid asteroid;
-    //Asteroid asteroid2;
-    //Asteroid ast3, ast4;
 
-    Menu menu;
     Timer timer;
-
 
     std::vector<Asteroid> asteroidVec;
 
-    int score;
+    //asteroid health
+    int health;
 
+    //teapot health
+    int m_teapotHealth;
+
+    //game score
+    int m_score;
 };
 
 

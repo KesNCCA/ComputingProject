@@ -1,19 +1,14 @@
 #include "NGLDraw.h"
-#include <ngl/ShaderLib.h>
-#include <ngl/NGLInit.h>
-#include <ngl/Transformation.h>
-
-#include <ngl/AbstractVAO.h>
 
 const static float INCREMENT=0.01f;
 const static float ZOOM=0.05f;
 constexpr auto PBR="PBR";
 
-#define MOVEMENT_AMOUNT 0.5f
-
 NGLDraw::NGLDraw()
 {
-    score = 0;
+    m_teapotHealth = 7;
+    //Set initial game score
+    m_score = 0;
     //Set spaceships intial angle
     teapot.setRotation(90);
     //Start timer
@@ -63,7 +58,7 @@ NGLDraw::NGLDraw()
     //trial view matrix
     //from = B/F & U/D
     ngl::Vec3 from( 0.0f, 10.0f, 10.0f );
-    ngl::Vec3 to( 0.0f, 0.0f, 1.0f );
+    ngl::Vec3 to( 0.0f, 2.0f, 1.0f );
     ngl::Vec3 up( 0.0f, 1.0f, 0.0f );
     // now load to our new camera
     m_view=ngl::lookAt(from,to,up);
@@ -84,8 +79,8 @@ NGLDraw::NGLDraw()
     shader->setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
     shader->setUniform("checkOn",true);
     shader->setUniform("lightPos",0.0f,2.0f,2.0f);
-    shader->setUniform("colour1",0.1f,0.5f,0.9f,1.0f);
-    shader->setUniform("colour2",0.6f,0.6f,0.6f,1.0f);
+    shader->setUniform("colour1",0.9f,0.9f,0.9f,1.0f);
+    shader->setUniform("colour2",0.9f,0.9f,0.9f,1.0f);
     shader->setUniform("checkSize",60.0f);
 
 }
@@ -95,53 +90,6 @@ NGLDraw::~NGLDraw()
     std::cout<<"Shutting down NGL, removing VAO's and Shaders\n";
 }
 
-//Draws spaceship (boid shape)
-/*void NGLDraw::buildVAO()
-{
-    std::vector<ngl::Vec3> verts=
-    {
-        ngl::Vec3(0,1,1),
-        ngl::Vec3(0,0,-1),
-        ngl::Vec3(-0.5,1,1),
-        ngl::Vec3(0,1,1),
-        ngl::Vec3(0,0,-1),
-        ngl::Vec3(0.5,0,1),
-        ngl::Vec3(0,1,1),
-        ngl::Vec3(0,1,1.5),
-        ngl::Vec3(-0.5,0,1),
-        ngl::Vec3(0,1,1),
-        ngl::Vec3(0,0,1.5),
-        ngl::Vec3(0.5,0,1)
-
-    };
-
-    std::cout<<"Initial"<<verts.size()<<'\n';
-    ngl::Vec3 n=ngl::calcNormal(verts[2],verts[1],verts[0]);
-    verts.push_back(n);
-    verts.push_back(n);
-    verts.push_back(n);
-    n=ngl::calcNormal(verts[3],verts[4],verts[5]);
-    verts.push_back(n);
-    verts.push_back(n);
-    verts.push_back(n);
-
-    n=ngl::calcNormal(verts[6],verts[7],verts[8]);
-    verts.push_back(n);
-    verts.push_back(n);
-    verts.push_back(n);
-
-    n=ngl::calcNormal(verts[9],verts[10],verts[11]);
-    verts.push_back(n);
-    verts.push_back(n);
-    verts.push_back(n);
-
-    std::cout<<"sizeof(verts) " <<sizeof(verts);
-
-    //create a vao as a series of GL_TRIANGLES
-    m_vao.reset(ngl::VAOFactory::createVAO(ngl::simpleVAO,GL_TRIANGLES));
-    m_vao -> bind;
-}*/
-
 void NGLDraw::resize(int _w, int _h)
 {
     glViewport(0,0, _w  , _h );
@@ -150,9 +98,12 @@ void NGLDraw::resize(int _w, int _h)
     m_height=_h;
 }
 
-void NGLDraw::draw()
+void NGLDraw::draw(float _delta)
 {
-    if (timer.GetTime() > 5.0f)
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);			   // Black Background
+
+    //Spawn asteroids every 2 seconds
+    if (timer.GetTime() > SPAWN_TIME)
     {
         timer.Reset();
 
@@ -183,12 +134,11 @@ void NGLDraw::draw()
     m_mouseGlobalTX.m_m[ 3 ][ 2 ] = m_modelPos.m_z;
     // get the VBO instance and draw the built in teapot
     ngl::VAOPrimitives* prim = ngl::VAOPrimitives::instance();
-
+    shader->setUniform("colourIn", 1.0f, 0.0f, 0.0f);
     //****All objects are drawn here****//
-    teapot.Draw(m_view, m_mouseGlobalTX, m_project);
-    //asteroid.Draw(m_view, m_mouseGlobalTX, m_project);
-    //asteroid2.Draw(m_view, m_mouseGlobalTX, m_project);
+    teapot.Draw(m_view, m_mouseGlobalTX, m_project, _delta);
 
+    //shader->setUniform("colourIn", 0.5f, 0.0f, 0.0f);
 
     ngl::Mat4 tp;
     tp.translate(200, 0, 0);
@@ -205,7 +155,7 @@ void NGLDraw::draw()
 
     for (int i = 0; i < asteroidVec.size() ; i++)
     {
-        asteroidVec[i].Draw(m_view, m_mouseGlobalTX, m_project);
+        asteroidVec[i].Draw(m_view, m_mouseGlobalTX, m_project, _delta);
     }
 
     //Collision detection between bullets(shot) and asteroid
@@ -215,6 +165,7 @@ void NGLDraw::draw()
         {
             for (int j = 0; j < asteroidVec.size(); j++)
             {
+                //collision between asteroid and bullet
                 bool isCollided = sphereSphereCollision(asteroidVec[j].GetPosition(), asteroidVec[j].GetRadius(), teapot.GetBullets()[i].GetPosition(), teapot.GetBullets()[i].GetRadius());
 
                 if (isCollided)
@@ -224,16 +175,16 @@ void NGLDraw::draw()
                     asteroidVec[j].Damage();
 
                     //Increase the score by the asteroid's specific score value
-
                     if (asteroidVec[j].GetHealth() <= 0)
                     {
-                        // remove
+                        //Remove asteroid
                         std::vector<Asteroid>::iterator it;
 
-                        score += asteroidVec[j].GetScoreAmount();
+                        m_score += asteroidVec[j].GetScoreAmount();
 
-                        std::cout << "Score: " << score << std::endl;
+                        std::cout << "Score: " << m_score << std::endl;
 
+                        //Remove specific asteroid when health is 0.
                         it = asteroidVec.begin() + j;
                         asteroidVec.erase(it);
                     }
@@ -241,7 +192,6 @@ void NGLDraw::draw()
                     break;
                 }
             }
-            //sphereSphereCollision(asteroid2.GetPosition(), asteroid2.GetRadius(), teapot.GetBullets()[i].GetPosition(), teapot.GetBullets()[i].GetRadius());
         }
     }
 
@@ -251,11 +201,25 @@ void NGLDraw::draw()
         // Loop over all the asteroids and check if any of them have collided with the teaship
         for (int i = 0; i < asteroidVec.size(); i++)
         {
+            //Collision between asteroid and spaceship
             bool isCollided = sphereSphereCollision(asteroidVec[i].GetPosition(), asteroidVec[i].GetRadius(), teapot.GetPosition(), 1);
 
             if (isCollided)
             {
-                std::cout << "Stop touching me, you weirdo " << std::endl;
+                //Remove asteroid
+                std::vector<Asteroid>::iterator it;
+                //Remove specific asteroid when teapot collides.
+                it = asteroidVec.begin() + i;
+                asteroidVec.erase(it);
+                //Print health
+                std::cout << "Teapot Health:" << teapotHealth() << std::endl;
+                //Damage teapot
+                teapotDamage();
+                //Once teapot health reaches 0, game over
+                if(teapotHealth() <= 0)
+                {
+                    std::cout << "YOU LOSE" << std::endl;
+                }
             }
         }
     }
@@ -275,7 +239,7 @@ void NGLDraw::mouseMoveEvent (const SDL_MouseMotionEvent &_event)
         m_spinYFace += (float) 0.5f * diffx;
         m_origX = _event.x;
         m_origY = _event.y;
-        this->draw();
+        //this->draw();
     }
     // right mouse translate code
     else if(m_translate && _event.state &SDL_BUTTON_RMASK)
@@ -286,7 +250,7 @@ void NGLDraw::mouseMoveEvent (const SDL_MouseMotionEvent &_event)
         m_origYPos=_event.y;
         m_modelPos.m_x += INCREMENT * diffX;
         m_modelPos.m_y -= INCREMENT * diffY;
-        this->draw();
+        //this->draw();
     }
 }
 
@@ -335,24 +299,24 @@ void NGLDraw::wheelEvent(const SDL_MouseWheelEvent &_event)
     if(_event.y > 0)
     {
         m_modelPos.m_z+=ZOOM;
-        this->draw();
+        //this->draw();
     }
     else if(_event.y <0 )
     {
         m_modelPos.m_z-=ZOOM;
-        this->draw();
+        //this->draw();
     }
 
     // check the diff of the wheel position (0 means no change)
     if(_event.x > 0)
     {
         m_modelPos.m_x-=ZOOM;
-        this->draw();
+        //this->draw();
     }
     else if(_event.x <0 )
     {
         m_modelPos.m_x+=ZOOM;
-        this->draw();
+        //this->draw();
     }
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -362,15 +326,14 @@ void NGLDraw::wheelEvent(const SDL_MouseWheelEvent &_event)
 void NGLDraw::keyboardPressEvent(const SDL_Event &_event)
 {
     teapot.keyboardPressEvent(_event);
-    //asteroid.keyboardPressEvent(_event);
-    //menu.keyboardPressEvent(_event);
 
-    if (_event.key.keysym.sym == SDLK_SPACE)
-    {
-        Asteroid asteroid;
+    //Creates more asteroids (for testing)
+    //if (_event.key.keysym.sym == SDLK_SPACE)
+    //{
+        //Asteroid asteroid;
         //Adds asteroid object to vector array
-        asteroidVec.push_back(asteroid);
-    }
+        //asteroidVec.push_back(asteroid);
+    //}
 }
 
 //Collisions
@@ -405,5 +368,20 @@ bool NGLDraw::sphereSphereCollision(ngl::Vec3 _pos1, GLfloat _radius1, ngl::Vec3
 
 int NGLDraw::GetScore()
 {
-    return score;
+    return m_score;
+}
+
+void NGLDraw::ResetScore()
+{
+    m_score = 0;
+}
+
+void NGLDraw::teapotDamage()
+{
+    m_teapotHealth--;
+}
+
+int NGLDraw::teapotHealth()
+{
+    return m_teapotHealth;
 }
